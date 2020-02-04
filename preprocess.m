@@ -91,3 +91,9 @@ function EEG = loadFile(filename)
     file = csvread(char(filename), 1, 0);
     EEG = transpose(file);
 end
+
+function EEG = loadASCFiles(filename)
+    EEG = readtable(filename, 'Delimiter','\t','ReadVariableNames',false);
+    EEG = transpose(table2cell(EEG));
+end
+
