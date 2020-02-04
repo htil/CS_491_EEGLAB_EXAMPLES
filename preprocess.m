@@ -1,7 +1,7 @@
 currentDirectory = pwd;
 ALLEEG = [];
 CURRENTSET = 1;
-runICA = 1;
+runICA = 0;
 
 %% Directory that stores raw files
 rawDirectory = strcat(pwd, "/raw/");
