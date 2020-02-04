@@ -1,10 +1,13 @@
 currentDirectory = pwd;
 
-% CSV File
-eegFiles = dir(fullfile(raw_directory,'*.csv'));
-
 % Directory that stores raw files
 rawDirectory = strcat(pwd, "/raw/");
+
+% Directory that stores raw files
+cleanDirectory = char(strcat(pwd, "/clean/"));
+
+% CSV File
+eegFiles = dir(fullfile(rawDirectory,'*.csv'));
 
 % File to assist with source localization (ICA)
 elpFile = char(strcat(pwd, "/res/standard-10-5-cap385.elp"));
@@ -15,8 +18,16 @@ channelLocationFile = char(strcat(pwd, "/res/td_asd_malaia.ced"));
 % Sample Rate
 sampleRate = 256;
 
+% Number of Channels; 
+numChannels = 34;
+
 for k = 1:length(eegFiles)
-    file = strcat(rawDirectory, eegFiles(k).name);
+    
+    %% Handle File Loading 
+    
+    % Get file
+    currentFile = eegFiles(k).name;
+    file = strcat(rawDirectory, currentFile);
     
     % Load EEG Data
     participantEEG = loadFile(file);
@@ -25,7 +36,7 @@ for k = 1:length(eegFiles)
     sampleSize = getSampleSize(participantEEG);
     
     %Import file to EEGLAB
-    EEG = pop_importdata('dataformat','array','nbchan',4,'data','participantEEG','srate',sampleRate,'pnts', sampleSize,'xmin',0);
+    EEG = pop_importdata('dataformat','array','nbchan', numChannels,'data','participantEEG','srate',sampleRate,'pnts', sampleSize,'xmin',0);
     
     % Add Channels
     EEG = pop_chanedit(EEG, 'lookup',elpFile,'load',{channelLocationFile 'filetype' 'autodetect'});
@@ -42,25 +53,28 @@ for k = 1:length(eegFiles)
     % Add Hi Pass filter
     EEG = pop_eegfiltnew(EEG, 0.5, 30);
     
-    % 
+    % Remove Channels (Check to see if any channels are noisy)
+    %EEG = pop_select( EEG,'nochannel',{'F7' 'VEOG' 'HEOG'});
+    
+    % Create New Set
     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 12,'setname', eegFiles(k).name,'gui','off');
     
-    disp(EEG);
+    % Save File
+    outputFileName = split(currentFile,"."); outputFileName = outputFileName(1);
+    outputFileName = char(strcat(outputFileName, "_clean.set"));
+    EEG = pop_saveset( EEG, 'filename', outputFileName,'filepath', cleanDirectory);
     
-   
+    disp(EEG);
 end
 
 eeglab("redraw")
 
 function sampleSize = getSampleSize(EEGDATA)
-
-    %Get Number of Samples
     columnSize = size(EEGDATA);
     sampleSize = columnSize(2);
 end
 
 function EEG = loadFile(filename)
-    disp(filename);
     file = csvread(char(filename), 1, 0);
     EEG = transpose(file);
 end

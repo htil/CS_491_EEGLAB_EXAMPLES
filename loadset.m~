@@ -1,0 +1,60 @@
+currentDirectory = pwd;
+ALLEEG = [];
+CURRENTSET = 1;
+
+%% Directory that stores raw files
+rawDirectory = strcat(pwd, "/raw/");
+
+%% Directory that stores raw files
+cleanDirectory = char(strcat(pwd, "/clean/"));
+
+%% CSV File
+eegFiles = dir(fullfile(rawDirectory,'*.csv'));
+
+%% File to assist with source localization (ICA)
+elpFile = char(strcat(pwd, "/res/standard-10-5-cap385.elp"));
+
+%% Channel Locations
+channelLocationFile = char(strcat(pwd, "/res/td_asd_malaia.ced"));
+
+%% Sample Rate
+sampleRate = 512;
+
+%% Number of Channels; 
+numChannels = 34;
+
+%% Get set files
+setFiles = dir(fullfile(cleanDirectory,'*.set'));
+
+eeglab("redraw")
+for k = 1:length(setFiles)
+     baseFileName = setFiles(k).name;
+     EEG = pop_loadset('filename', baseFileName, 'filepath', cleanDirectory );
+     
+    %% Create New Set
+    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 12,'setname', eegFiles(k).name,'gui','off');
+    [ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET);
+    
+    %% Plot Figure
+    plotSpectrogram(k, EEG, baseFileName)
+    eeglab("redraw")
+end
+
+
+%% Plot Spectrogram
+function plotSpectrogram(chanNumber, EEG, baseFileName)
+    for i = 1:2
+        
+        caption = char(strcat(EEG.chanlocs(i).labels, " - ", baseFileName));
+        icaCaption = strcat(EEG.icachansind(i), ' - ', baseFileName);
+        %disp()
+        
+        %ICA
+        figure; pop_newtimef( EEG, 0, 1, [0  10000], [3         0.5] , 'topovec', EEG.icawinv(:,1), 'elocs', EEG.chanlocs, 'chaninfo', EEG.chaninfo, 'caption', icaCaption, 'baseline',[0], 'plotphase', 'off', 'padratio', 1);
+       
+        % Channel
+        %figure; pop_newtimef( EEG, 1, 2, [0  10000], [3         0.5] , 'topovec', 2, 'elocs', EEG.chanlocs, 'chaninfo', EEG.chaninfo, 'caption', caption, 'baseline',[0], 'freqs', [0 30], 'plotphase', 'off', 'padratio', 1);
+    end
+end
+
+
