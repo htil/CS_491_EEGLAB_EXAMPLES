@@ -82,7 +82,6 @@ for k = 1:length(eegFiles)
     eeglab("redraw")
 end
 
-
 function sampleSize = getSampleSize(EEGDATA)
     columnSize = size(EEGDATA);
     sampleSize = columnSize(2);
