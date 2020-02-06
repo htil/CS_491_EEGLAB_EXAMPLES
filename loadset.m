@@ -16,7 +16,7 @@ global COMPONENT_COUNT;
 COMPONENT_COUNT = 3;
 
 global FILE_COUNT;
-FILE_COUNT = 1;
+FILE_COUNT = -1;
 
 % Directory that stores raw files
 rawDirectory = strcat(pwd, "/raw/");
@@ -49,7 +49,7 @@ setFiles = dir(fullfile(cleanDirectory,'*.set'));
 %% Process Files
 
 eeglab("redraw")
-for k = 1:getFileCount()
+for k = 1:getFileCount(setFiles)
      baseFileName = setFiles(k).name;
      EEG = pop_loadset('filename', baseFileName, 'filepath', cleanDirectory );
      
@@ -58,7 +58,7 @@ for k = 1:getFileCount()
     [ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET);
     
     % Plot Figure
-    plotSpectrogram(k, EEG, baseFileName)
+    %plotSpectrogram(k, EEG, baseFileName)
     eeglab("redraw")
 end
 
@@ -95,7 +95,7 @@ global figureDirecory PLOT_CHANNEL SAVE_FIGURE PLOT_ICA COMPONENT_COUNT
 end
 
 %% Get File Count
-function fileCount = getFileCount()
+function fileCount = getFileCount(setFiles)
     global FILE_COUNT
     
     if FILE_COUNT == -1
